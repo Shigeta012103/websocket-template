@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket Game Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+    .container { max-width: 480px; width: 100%; padding: 24px; }
+    h1 { font-size: 20px; text-align: center; margin-bottom: 24px; color: #e94560; }
+    .status { text-align: center; margin-bottom: 16px; font-size: 14px; color: #888; }
+    .status.connected { color: #4ecca3; }
+    .section { background: #16213e; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    .section h2 { font-size: 14px; color: #888; margin-bottom: 12px; }
+    button { width: 100%; padding: 12px; border: none; border-radius: 8px; background: #e94560; color: #fff; font-size: 16px; cursor: pointer; margin-bottom: 8px; }
+    button:hover { background: #c73a52; }
+    button:disabled { background: #444; cursor: not-allowed; }
+    input { width: 100%; padding: 12px; border: 1px solid #333; border-radius: 8px; background: #0f3460; color: #eee; font-size: 16px; margin-bottom: 8px; }
+    input::placeholder { color: #666; }
+    .room-code { font-size: 32px; text-align: center; color: #4ecca3; font-weight: bold; letter-spacing: 4px; padding: 12px; }
+    .log { background: #0a0a1a; border-radius: 8px; padding: 12px; max-height: 200px; overflow-y: auto; font-size: 12px; font-family: monospace; line-height: 1.8; }
+    .log .info { color: #4ecca3; }
+    .log .error { color: #e94560; }
+    .log .action { color: #e9c46a; }
+    .hidden { display: none; }
+    .player-count { text-align: center; font-size: 14px; color: #888; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>WebSocket Game Demo</h1>
+    <div id="status" class="status">Disconnected</div>
+
+    <div id="lobby" class="section">
+      <h2>LOBBY</h2>
+      <button id="createBtn" disabled>ルームを作成</button>
+      <div style="display:flex; gap:8px;">
+        <input id="codeInput" placeholder="招待コード" maxlength="6" style="text-transform:uppercase;">
+        <button id="joinBtn" disabled style="width:auto; padding:12px 24px;">参加</button>
+      </div>
+    </div>
+
+    <div id="room" class="section hidden">
+      <h2>ROOM</h2>
+      <div id="roomCode" class="room-code"></div>
+      <div id="playerCount" class="player-count"></div>
+    </div>
+
+    <div id="game" class="section hidden">
+      <h2>GAME</h2>
+      <input id="messageInput" placeholder="メッセージを入力">
+      <button id="sendBtn">送信</button>
+    </div>
+
+    <div class="section">
+      <h2>LOG</h2>
+      <div id="log" class="log"></div>
+    </div>
+  </div>
+
+  <script>
+    let WS_URL = "";
+
+    const statusEl = document.getElementById("status");
+    const lobbyEl = document.getElementById("lobby");
+    const roomEl = document.getElementById("room");
+    const gameEl = document.getElementById("game");
+    const roomCodeEl = document.getElementById("roomCode");
+    const playerCountEl = document.getElementById("playerCount");
+    const logEl = document.getElementById("log");
+    const createBtn = document.getElementById("createBtn");
+    const joinBtn = document.getElementById("joinBtn");
+    const codeInput = document.getElementById("codeInput");
+    const messageInput = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendBtn");
+
+    function addLog(text, type = "info") {
+      const time = new Date().toLocaleTimeString();
+      logEl.innerHTML += `<div class="${type}">[${time}] ${text}</div>`;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    let ws;
+
+    function connect() {
+      if (WS_URL.includes("{{")) {
+        addLog("WS_URL が未設定です。デプロイ後に設定してください。", "error");
+        return;
+      }
+
+      ws = new WebSocket(WS_URL);
+
+      ws.onopen = () => {
+        statusEl.textContent = "Connected";
+        statusEl.className = "status connected";
+        createBtn.disabled = false;
+        joinBtn.disabled = false;
+        addLog("WebSocket 接続完了");
+      };
+
+      ws.onclose = () => {
+        statusEl.textContent = "Disconnected";
+        statusEl.className = "status";
+        createBtn.disabled = true;
+        joinBtn.disabled = true;
+        addLog("WebSocket 切断", "error");
+        setTimeout(connect, 3000);
+      };
+
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        handleMessage(msg);
+      };
+    }
+
+    function handleMessage(msg) {
+      switch (msg.type) {
+        case "roomCreated":
+          roomCodeEl.textContent = msg.roomCode;
+          playerCountEl.textContent = "1人が参加中... 相手を待っています";
+          lobbyEl.classList.add("hidden");
+          roomEl.classList.remove("hidden");
+          addLog(`ルーム作成: ${msg.roomCode}`, "info");
+          break;
+
+        case "playerJoined":
+          playerCountEl.textContent = `${msg.playerCount}/${msg.maxPlayers} 人が参加中`;
+          addLog(`プレイヤー参加 (${msg.playerCount}/${msg.maxPlayers})`, "info");
+          break;
+
+        case "gameStart":
+          roomEl.classList.add("hidden");
+          gameEl.classList.remove("hidden");
+          addLog("ゲーム開始!", "info");
+          break;
+
+        case "gameAction":
+          addLog(`受信: ${JSON.stringify(msg.data)}`, "action");
+          break;
+
+        case "playerLeft":
+          addLog(`プレイヤー退出 (残り ${msg.remainingPlayers} 人)`, "error");
+          break;
+
+        case "error":
+          addLog(`エラー: ${msg.message}`, "error");
+          break;
+
+        default:
+          addLog(`不明: ${JSON.stringify(msg)}`, "error");
+      }
+    }
+
+    createBtn.addEventListener("click", () => {
+      ws.send(JSON.stringify({ action: "createRoom" }));
+    });
+
+    joinBtn.addEventListener("click", () => {
+      const code = codeInput.value.trim().toUpperCase();
+      if (!code) return;
+      ws.send(JSON.stringify({ action: "joinRoom", roomCode: code }));
+      lobbyEl.classList.add("hidden");
+      roomEl.classList.remove("hidden");
+      roomCodeEl.textContent = code;
+      playerCountEl.textContent = "参加中...";
+    });
+
+    sendBtn.addEventListener("click", () => {
+      const text = messageInput.value.trim();
+      if (!text) return;
+      ws.send(JSON.stringify({ action: "gameAction", data: { message: text } }));
+      addLog(`送信: ${text}`, "action");
+      messageInput.value = "";
+    });
+
+    messageInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") sendBtn.click();
+    });
+
+    fetch("/config.json")
+      .then((res) => res.json())
+      .then((config) => {
+        WS_URL = config.wsUrl;
+        connect();
+      })
+      .catch(() => {
+        addLog("config.json の読み込みに失敗しました。デプロイ済みか確認してください。", "error");
+      });
+  </script>
+</body>
+</html>

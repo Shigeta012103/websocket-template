@@ -62,16 +62,18 @@ bash scripts/deploy.sh my-game-name
 
 ## WebSocket 接続サンプル
 
-フロントエンドから WebSocket に接続するサンプルコード:
+デプロイすると `/config.json` が自動生成され、WebSocket URL が含まれます。
+フロントエンドからはこれを読み込んで接続してください。ハードコード不要です。
 
 ```javascript
-// 接続
-const ws = new WebSocket("wss://xxxxx.execute-api.ap-northeast-1.amazonaws.com/prod");
+// config.json を読み込んで接続
+const config = await fetch("/config.json").then((res) => res.json());
+const ws = new WebSocket(config.wsUrl);
+```
 
-ws.onopen = () => {
-  console.log("Connected");
-};
+その他のサンプルコード:
 
+```javascript
 // ルーム作成
 ws.send(JSON.stringify({ action: "createRoom" }));
 

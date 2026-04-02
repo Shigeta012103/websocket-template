@@ -159,9 +159,16 @@ export class WebSocketGameStack extends cdk.Stack {
       ],
     });
 
-    // フロントエンドデプロイ
+    // フロントエンドデプロイ（config.json を自動生成して同梱）
+    const configJson = JSON.stringify({
+      wsUrl: webSocketStage.url,
+    });
+
     new s3deploy.BucketDeployment(this, "DeployFrontend", {
-      sources: [s3deploy.Source.asset(path.join(__dirname, "../../frontend"))],
+      sources: [
+        s3deploy.Source.asset(path.join(__dirname, "../../frontend")),
+        s3deploy.Source.data("config.json", configJson),
+      ],
       destinationBucket: frontendBucket,
       distribution,
       distributionPaths: ["/*"],
