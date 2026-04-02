@@ -167,7 +167,8 @@ websocket-game-template/
 │           ├── roomManager.ts    # 共通: ルーム管理
 │           └── types.ts          # 型定義
 ├── frontend/                     # ★ ここにフロントエンドを配置
-│       └── game.config.ts    # ゲーム設定
+├── examples/
+│   └── index.html                # デモ用サンプル（参考用）
 ├── scripts/deploy.sh             # デプロイスクリプト
 └── README.md
 ```
