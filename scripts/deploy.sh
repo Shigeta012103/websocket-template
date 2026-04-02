@@ -1,7 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
-GAME_NAME="${1:-websocket-game}"
+if [ -z "${1:-}" ]; then
+  echo "Error: ゲーム名を指定してください"
+  echo "Usage: bash scripts/deploy.sh <game-name>"
+  exit 1
+fi
+
+GAME_NAME="$1"
 
 echo "=== WebSocket Game Deploy ==="
 echo "Game: $GAME_NAME"

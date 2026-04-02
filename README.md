@@ -50,12 +50,10 @@ export const gameConfig = {
 ### 4. デプロイ
 
 ```bash
-# デフォルト名でデプロイ
-npm run deploy
-
-# ゲーム名を指定してデプロイ（同じAWSアカウントに複数ゲームをデプロイ可能）
 bash scripts/deploy.sh my-game-name
 ```
+
+**注意**: ゲーム名は必須です。他の人と被らない名前を指定してください。
 
 デプロイ完了後、以下が出力される:
 
