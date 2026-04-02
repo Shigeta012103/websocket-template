@@ -42,10 +42,17 @@ export const gameConfig = {
 `backend/src/handlers/gameAction.ts` を編集。
 デフォルトでは受け取ったデータをそのまま他プレイヤーに転送する。
 
-### 3. フロントエンドを作成する
+### 3. フロントエンドをカスタマイズする
 
-`frontend/` ディレクトリに好きな技術で作成する。
-ビルド後の静的ファイル（HTML/CSS/JS）を `frontend/` に配置する。
+`frontend/` にはルーム作成・参加のUIが共通で用意されている。
+開発者は `room.js` 内の以下の関数をカスタマイズするだけでゲームを実装できる:
+
+- `onGameStart(players)` - ゲーム開始時の処理
+- `onGameMessage(from, data)` - 相手からデータを受信した時の処理
+- `onPlayerLeft(remainingPlayers)` - プレイヤー退出時の処理
+- `sendGameAction(data)` - 相手にデータを送信するユーティリティ
+
+ゲーム画面は `index.html` の `<div id="gameContainer">` 内に実装する。
 
 ### 4. デプロイ
 

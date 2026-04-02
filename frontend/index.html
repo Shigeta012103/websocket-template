@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <!-- ルーム作成・参加画面 -->
+    <div id="lobby">
+      <h1>WebSocket Game</h1>
+      <div class="lobby-actions">
+        <button id="createBtn" disabled>ルームを作成</button>
+        <div class="divider">or</div>
+        <div class="join-form">
+          <input id="codeInput" placeholder="招待コードを入力" maxlength="6">
+          <button id="joinBtn" disabled>参加</button>
+        </div>
+      </div>
+      <p id="lobbyStatus" class="status">接続中...</p>
+    </div>
+
+    <!-- 待機画面 -->
+    <div id="waiting" class="hidden">
+      <h2>ルーム作成完了</h2>
+      <p class="room-code" id="roomCode"></p>
+      <p>この招待コードを相手に共有してください</p>
+      <p id="playerCount" class="status"></p>
+    </div>
+
+    <!-- ゲーム画面（開発者がここをカスタマイズ） -->
+    <div id="game" class="hidden">
+      <p class="status">ゲーム開始！ この画面をカスタマイズしてください。</p>
+      <div id="gameContainer"></div>
+    </div>
+  </div>
+
+  <script src="room.js"></script>
+</body>
+</html>
