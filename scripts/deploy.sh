@@ -10,6 +10,12 @@ fi
 
 GAME_NAME="$1"
 PROFILE="${2:-sandbox}"
+
+# .env があれば読み込む
+if [ -f .env ]; then
+  export $(grep -v '^#' .env | xargs)
+fi
+
 EXPECTED_ACCOUNT_ID="${DEPLOY_ACCOUNT_ID:-}"
 
 # プロファイルの認証確認
