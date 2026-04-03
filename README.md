@@ -37,22 +37,28 @@ export const gameConfig = {
 };
 ```
 
-### 2. ゲームロジックを実装する
+### 2. フロントエンドをカスタマイズする
+
+`frontend/room.js` 内の以下の関数をカスタマイズしてゲームを実装する:
+
+| 関数 | 説明 |
+|---|---|
+| `onGameStart(players)` | ゲーム開始時の処理 |
+| `onGameMessage(from, data)` | 相手からデータを受信した時の処理 |
+| `onPlayerLeft(remainingPlayers)` | プレイヤー退出時の処理 |
+
+データ送信には `sendGameAction(data)` を使用する。
+
+ゲーム画面は `index.html` の `<div id="gameContainer">` 内に実装する。
+
+ルーム作成・参加のUIは共通で用意済みのため、実装不要。
+
+### 3. ゲームロジックを実装する（任意）
 
 `backend/src/handlers/gameAction.ts` を編集。
 デフォルトでは受け取ったデータをそのまま他プレイヤーに転送する。
 
-### 3. フロントエンドをカスタマイズする
-
-`frontend/` にはルーム作成・参加のUIが共通で用意されている。
-開発者は `room.js` 内の以下の関数をカスタマイズするだけでゲームを実装できる:
-
-- `onGameStart(players)` - ゲーム開始時の処理
-- `onGameMessage(from, data)` - 相手からデータを受信した時の処理
-- `onPlayerLeft(remainingPlayers)` - プレイヤー退出時の処理
-- `sendGameAction(data)` - 相手にデータを送信するユーティリティ
-
-ゲーム画面は `index.html` の `<div id="gameContainer">` 内に実装する。
+サーバー側でバリデーションや勝敗判定が必要な場合のみ書き換える。
 
 ### 4. デプロイ
 
@@ -64,71 +70,16 @@ bash scripts/deploy.sh my-game-name
 
 デプロイ完了後、以下が出力される:
 
-- **WebSocket URL**: `wss://xxxxx.execute-api.ap-northeast-1.amazonaws.com/prod`
-- **Frontend URL**: `https://xxxxx.cloudfront.net`
+- **Frontend URL**: `https://xxxxx.cloudfront.net` — このURLを共有して遊べる
+- **WebSocket URL**: 自動で `config.json` に埋め込まれるため、ハードコード不要
 
-## WebSocket 接続サンプル
+## 遊び方
 
-デプロイすると `/config.json` が自動生成され、WebSocket URL が含まれます。
-フロントエンドからはこれを読み込んで接続してください。ハードコード不要です。
-
-```javascript
-// config.json を読み込んで接続
-const config = await fetch("/config.json").then((res) => res.json());
-const ws = new WebSocket(config.wsUrl);
-```
-
-その他のサンプルコード:
-
-```javascript
-// ルーム作成
-ws.send(JSON.stringify({ action: "createRoom" }));
-
-// ルーム参加
-ws.send(JSON.stringify({ action: "joinRoom", roomCode: "ABC123" }));
-
-// ゲームアクション送信
-ws.send(JSON.stringify({
-  action: "gameAction",
-  data: { type: "move", x: 100, y: 200 }
-}));
-
-// メッセージ受信
-ws.onmessage = (event) => {
-  const message = JSON.parse(event.data);
-
-  switch (message.type) {
-    case "roomCreated":
-      // message.roomCode でルームコードを取得
-      console.log("Room created:", message.roomCode);
-      break;
-
-    case "playerJoined":
-      // message.playerCount, message.maxPlayers
-      console.log(`Players: ${message.playerCount}/${message.maxPlayers}`);
-      break;
-
-    case "gameStart":
-      // message.players で参加者一覧を取得
-      console.log("Game started!", message.players);
-      break;
-
-    case "gameAction":
-      // message.from で送信者、message.data でゲームデータ
-      console.log("Action from:", message.from, message.data);
-      break;
-
-    case "playerLeft":
-      // message.remainingPlayers で残りの人数
-      console.log("Player left. Remaining:", message.remainingPlayers);
-      break;
-
-    case "error":
-      console.error("Error:", message.message);
-      break;
-  }
-};
-```
+1. Frontend URL にアクセスする
+2. 「ルームを作成」をクリック → 招待コードが表示される
+3. 相手に招待コードを共有する
+4. 相手が招待コードを入力して「参加」をクリック
+5. 全員揃ったらゲーム開始
 
 ## このテンプレートで作れるゲーム
 
@@ -168,12 +119,16 @@ websocket-game-template/
 │       │   ├── disconnect.ts     # 共通: 切断管理
 │       │   ├── createRoom.ts     # 共通: ルーム作成
 │       │   ├── joinRoom.ts       # 共通: ルーム参加
-│       │   └── gameAction.ts     # ★ ここにゲームロジックを書く
-│       └── lib/
-│           ├── broadcast.ts      # 共通: メッセージ送信
-│           ├── roomManager.ts    # 共通: ルーム管理
-│           └── types.ts          # 型定義
-├── frontend/                     # ★ ここにフロントエンドを配置
+│       │   └── gameAction.ts     # ★ サーバー側ロジック（任意）
+│       ├── lib/
+│       │   ├── broadcast.ts      # 共通: メッセージ送信
+│       │   ├── roomManager.ts    # 共通: ルーム管理
+│       │   └── types.ts          # 型定義
+│       └── game.config.ts        # ゲーム設定
+├── frontend/
+│   ├── index.html                # ルーム作成・参加UI（共通）
+│   ├── style.css                 # スタイル
+│   └── room.js                   # ★ ゲームロジックをここに実装
 ├── examples/
 │   └── index.html                # デモ用サンプル（参考用）
 ├── scripts/deploy.sh             # デプロイスクリプト
