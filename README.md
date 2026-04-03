@@ -44,7 +44,7 @@ export const gameConfig = {
 | 関数 | 説明 |
 |---|---|
 | `onGameStart(players)` | ゲーム開始時の処理 |
-| `onGameMessage(from, data)` | 相手からデータを受信した時の処理 |
+| `onGameAction(from, data)` | 相手のゲーム操作を受信した時の処理 |
 | `onPlayerLeft(remainingPlayers)` | プレイヤー退出時の処理 |
 
 データ送信には `sendGameAction(data)` を使用する。

@@ -6,6 +6,8 @@ cdk-outputs.json
 *.d.ts
 *.js.map
 !jest.config.js
+!frontend/**/*.js
+!examples/**/*.js
 
 # CDK
 .cdk.staging/
