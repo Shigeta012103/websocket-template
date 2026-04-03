@@ -37,30 +37,63 @@ export const gameConfig = {
 };
 ```
 
-### 2. フロントエンドをカスタマイズする
+### 2. ゲームを実装する
 
-`frontend/src/room.ts` 内の以下の関数をカスタマイズしてゲームを実装する:
+開発者が編集するファイルは以下の通り。それ以外のファイルは**編集不要**。
 
-| 関数 | 説明 |
-|---|---|
-| `onGameStart(players)` | ゲーム開始時の処理 |
-| `onGameAction(from, data)` | 相手のゲーム操作を受信した時の処理 |
-| `onPlayerLeft(remainingPlayers)` | プレイヤー退出時の処理 |
+#### 編集するファイル一覧
 
-データ送信には `sendGameAction(data)` を使用する。
+| ファイル | 何をするか | 必須 |
+|---|---|---|
+| `frontend/src/room.ts` | ゲームのメインロジック（描画・操作・通信） | YES |
+| `frontend/public/index.html` | ゲーム画面のHTML | YES |
+| `frontend/public/style.css` | 見た目のカスタマイズ | YES |
+| `backend/src/game.config.ts` | ルームの人数設定 | YES |
+| `backend/src/handlers/gameAction.ts` | サーバー側の判定ロジック（チート防止・勝敗判定等） | 必要な場合のみ |
 
-ゲーム画面は `frontend/public/index.html` の `<div id="gameContainer">` 内に実装する。
+#### `frontend/src/room.ts` で何を書くか
 
-ルーム作成・参加のロジックは `room.ts` に共通で用意済み。見た目は `public/index.html` と `public/style.css` を自由にカスタマイズできる。
+ファイル下部の「★ 以下を開発者がカスタマイズする」セクションの3つの関数を実装する:
 
-### 3. ゲームロジックを実装する（任意）
+```typescript
+// ゲーム開始時に呼ばれる。ここでゲーム画面の初期化を行う。
+function onGameStart(players: string[]): void {
+  // 例: Canvasを生成してゲームループを開始する
+}
 
-`backend/src/handlers/gameAction.ts` を編集。
+// 相手のゲーム操作を受信した時に呼ばれる。ここで相手の状態を反映する。
+function onGameAction(from: string, data: Record<string, unknown>): void {
+  // 例: 相手のキャラ位置を更新する
+}
+
+// プレイヤーが退出した時に呼ばれる。
+function onPlayerLeft(remainingPlayers: number): void {
+  // 例: 「相手が退出しました」と表示する
+}
+```
+
+相手にデータを送るには `sendGameAction()` を呼ぶ:
+
+```typescript
+// 自分の操作を相手に送信する
+sendGameAction({ x: 100, y: 200, type: "move" });
+```
+
+#### `frontend/public/index.html` で何を書くか
+
+`<div id="gameContainer">` の中にゲーム画面のHTMLを配置する。
+ルーム作成・参加画面（`<div id="lobby">`, `<div id="waiting">`）は共通で用意済み。見た目の変更は自由。
+
+#### `backend/src/handlers/gameAction.ts` で何を書くか（任意）
+
 デフォルトでは受け取ったデータをそのまま他プレイヤーに転送する。
+以下のような場合のみ書き換える:
 
-サーバー側でバリデーションや勝敗判定が必要な場合のみ書き換える。
+- じゃんけんのように**両者の入力が揃ってから判定**したい
+- クイズの早押しで**サーバーのタイムスタンプで順番を確定**したい
+- **不正なデータを弾く**バリデーションを入れたい
 
-### 4. デプロイ
+### 3. デプロイ
 
 ```bash
 bash scripts/deploy.sh my-game-name
@@ -109,31 +142,31 @@ API Gateway + Lambda の構成は **100〜200ms程度の遅延** があります
 
 ```
 websocket-game-template/
-├── infra/                        # CDK（インフラ定義）
+├── infra/                           # CDK（編集不要）
 │   ├── bin/app.ts
 │   └── lib/websocket-stack.ts
 ├── backend/
 │   └── src/
 │       ├── handlers/
-│       │   ├── connect.ts        # 共通: 接続管理
-│       │   ├── disconnect.ts     # 共通: 切断管理
-│       │   ├── createRoom.ts     # 共通: ルーム作成
-│       │   ├── joinRoom.ts       # 共通: ルーム参加
-│       │   └── gameAction.ts     # ★ サーバー側ロジック（任意）
-│       ├── lib/
-│       │   ├── broadcast.ts      # 共通: メッセージ送信
-│       │   ├── roomManager.ts    # 共通: ルーム管理
-│       │   └── types.ts          # 型定義
-│       └── game.config.ts        # ゲーム設定
+│       │   ├── connect.ts           # 編集不要
+│       │   ├── disconnect.ts        # 編集不要
+│       │   ├── createRoom.ts        # 編集不要
+│       │   ├── joinRoom.ts          # 編集不要
+│       │   └── gameAction.ts        # ★ サーバー側ロジック（必要な場合のみ）
+│       ├── lib/                     # 編集不要
+│       │   ├── broadcast.ts
+│       │   ├── roomManager.ts
+│       │   └── types.ts
+│       └── game.config.ts           # ★ 人数設定
 ├── frontend/
 │   ├── public/
-│   │   ├── index.html            # ルーム作成・参加UI（共通）
-│   │   └── style.css             # スタイル
+│   │   ├── index.html               # ★ ゲーム画面のHTML
+│   │   └── style.css                # ★ スタイル
 │   └── src/
-│       └── room.ts               # ★ ゲームロジックをここに実装
+│       └── room.ts                  # ★ ゲームのメインロジック
 ├── examples/
-│   └── index.html                # デモ用サンプル（参考用）
-├── scripts/deploy.sh             # デプロイスクリプト
+│   └── index.html                   # デモ用サンプル（参考用）
+├── scripts/deploy.sh                # デプロイスクリプト
 └── README.md
 ```
 
