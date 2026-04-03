@@ -13,12 +13,25 @@ AWS API Gateway (WebSocket) + Lambda + DynamoDB + S3 + CloudFront
 ### 前提条件
 
 - Node.js 20+
-- AWS CLI（`sandbox` プロファイルでログイン済み）
+- AWS CLI
 - AWS CDK（`npm install -g aws-cdk`）
 - CDK Bootstrap 済み（`cdk bootstrap aws://ACCOUNT_ID/ap-northeast-1 --profile sandbox`）
 
-> デプロイ先は **sandbox アカウント固定**です。他のアカウントにはデプロイできません。
-> 未ログインの場合は `aws sso login --profile sandbox` を実行してください。
+> デプロイ先は **sandbox アカウント固定**です。
+> AWS CLI のプロファイル名を **`sandbox`** にしてください。
+> 設定方法は以下を参照:
+>
+> ```bash
+> # SSO の場合
+> aws configure sso
+> # → プロファイル名を聞かれたら「sandbox」と入力
+>
+> # 設定済みプロファイルの確認
+> aws configure list-profiles
+>
+> # ログイン
+> aws sso login --profile sandbox
+> ```
 
 ### インストール
 
