@@ -93,10 +93,21 @@ export const gameConfig = {
 ### 3. デプロイ
 
 ```bash
+# sandboxにデプロイ（デフォルト）
 bash scripts/deploy.sh my-game-name
+
+# 別のプロファイルを指定する場合
+bash scripts/deploy.sh my-game-name my-profile
 ```
 
 **注意**: ゲーム名は必須です。他の人と被らない名前を指定してください。
+
+**アカウントID検証**: 環境変数 `DEPLOY_ACCOUNT_ID` を設定しておくと、デプロイ先のアカウントIDが一致するか事前に検証します。意図しないアカウントへの誤デプロイを防げます。
+
+```bash
+export DEPLOY_ACCOUNT_ID=123456789012
+bash scripts/deploy.sh my-game-name
+```
 
 デプロイ完了後、以下が出力される:
 
