@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "install:all": "npm install && cd backend && npm install && cd ../infra && npm install",
-    "build": "cd backend && npm run build",
+    "install:all": "npm install && cd backend && npm install && cd ../infra && npm install && cd ../frontend && npm install",
+    "build": "cd backend && npm run build && cd ../frontend && npm run build",
     "deploy": "npm run build && cd infra && npx cdk deploy --outputs-file ../cdk-outputs.json",
     "destroy": "cd infra && npx cdk destroy"
   }

@@ -39,7 +39,7 @@ export const gameConfig = {
 
 ### 2. フロントエンドをカスタマイズする
 
-`frontend/room.js` 内の以下の関数をカスタマイズしてゲームを実装する:
+`frontend/src/room.ts` 内の以下の関数をカスタマイズしてゲームを実装する:
 
 | 関数 | 説明 |
 |---|---|
@@ -49,9 +49,9 @@ export const gameConfig = {
 
 データ送信には `sendGameAction(data)` を使用する。
 
-ゲーム画面は `index.html` の `<div id="gameContainer">` 内に実装する。
+ゲーム画面は `frontend/public/index.html` の `<div id="gameContainer">` 内に実装する。
 
-ルーム作成・参加のロジックは `room.js` に共通で用意済み。見た目は `index.html` と `style.css` を自由にカスタマイズできる。
+ルーム作成・参加のロジックは `room.ts` に共通で用意済み。見た目は `public/index.html` と `public/style.css` を自由にカスタマイズできる。
 
 ### 3. ゲームロジックを実装する（任意）
 
@@ -126,9 +126,11 @@ websocket-game-template/
 │       │   └── types.ts          # 型定義
 │       └── game.config.ts        # ゲーム設定
 ├── frontend/
-│   ├── index.html                # ルーム作成・参加UI（共通）
-│   ├── style.css                 # スタイル
-│   └── room.js                   # ★ ゲームロジックをここに実装
+│   ├── public/
+│   │   ├── index.html            # ルーム作成・参加UI（共通）
+│   │   └── style.css             # スタイル
+│   └── src/
+│       └── room.ts               # ★ ゲームロジックをここに実装
 ├── examples/
 │   └── index.html                # デモ用サンプル（参考用）
 ├── scripts/deploy.sh             # デプロイスクリプト

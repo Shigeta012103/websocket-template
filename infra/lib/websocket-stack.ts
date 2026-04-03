@@ -166,7 +166,7 @@ export class WebSocketGameStack extends cdk.Stack {
 
     new s3deploy.BucketDeployment(this, "DeployFrontend", {
       sources: [
-        s3deploy.Source.asset(path.join(__dirname, "../../frontend")),
+        s3deploy.Source.asset(path.join(__dirname, "../../frontend/dist")),
         s3deploy.Source.data("config.json", configJson),
       ],
       destinationBucket: frontendBucket,
