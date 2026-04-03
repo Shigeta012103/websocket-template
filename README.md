@@ -51,7 +51,7 @@ export const gameConfig = {
 
 ゲーム画面は `index.html` の `<div id="gameContainer">` 内に実装する。
 
-ルーム作成・参加のUIは共通で用意済みのため、実装不要。
+ルーム作成・参加のロジックは `room.js` に共通で用意済み。見た目は `index.html` と `style.css` を自由にカスタマイズできる。
 
 ### 3. ゲームロジックを実装する（任意）
 
