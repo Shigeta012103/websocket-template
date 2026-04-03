@@ -52,6 +52,11 @@ button:hover {
   background: #c73a52;
 }
 
+button:focus {
+  outline: 2px solid #4ecca3;
+  outline-offset: 2px;
+}
+
 button:disabled {
   background: #444;
   cursor: not-allowed;
@@ -86,6 +91,12 @@ input {
   width: 100%;
 }
 
+input:focus {
+  outline: 2px solid #4ecca3;
+  outline-offset: 2px;
+  border-color: #4ecca3;
+}
+
 input::placeholder {
   color: #666;
 }
@@ -102,6 +113,18 @@ input::placeholder {
   color: #888;
   font-size: 14px;
   margin-top: 16px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 .hidden {

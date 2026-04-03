@@ -51,7 +51,7 @@ export async function broadcastToRoom(
     ? playerConnectionIds.filter((id) => id !== excludeConnectionId)
     : playerConnectionIds;
 
-  await Promise.all(
+  await Promise.allSettled(
     targets.map((connectionId) =>
       sendToConnection(domainName, stage, connectionId, message)
     )
