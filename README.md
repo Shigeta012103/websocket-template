@@ -94,10 +94,10 @@ export const gameConfig = {
 
 ```bash
 # sandboxにデプロイ（デフォルト）
-bash scripts/deploy.sh my-game-name
+npm run deploy -- my-game-name
 
 # 別のプロファイルを指定する場合
-bash scripts/deploy.sh my-game-name my-profile
+npm run deploy -- my-game-name my-profile
 ```
 
 **注意**: ゲーム名は必須です。他の人と被らない名前を指定してください。
