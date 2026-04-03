@@ -102,12 +102,7 @@ npm run deploy -- my-game-name my-profile
 
 **注意**: ゲーム名は必須です。他の人と被らない名前を指定してください。
 
-**アカウントID検証**: `.env` にデプロイ先のアカウントIDを設定しておくと、デプロイ前に一致を検証し、誤デプロイを防げます。
-
-```bash
-cp .env.example .env
-# .env の DEPLOY_ACCOUNT_ID にsandboxのアカウントIDを設定
-```
+**アカウントID検証**: `.env` にsandboxのアカウントIDが設定済みです。デプロイ前にアカウントIDの一致を自動で検証し、誤デプロイを防ぎます。
 
 デプロイ完了後、以下が出力される:
 

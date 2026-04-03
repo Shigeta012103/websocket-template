@@ -12,5 +12,4 @@ cdk-outputs.json
 .cdk.staging/
 
 # Environment
-.env
 .env.local
