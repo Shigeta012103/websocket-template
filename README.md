@@ -51,47 +51,92 @@ export const gameConfig = {
 | `backend/src/game.config.ts` | ルームの人数設定 | YES |
 | `backend/src/handlers/gameAction.ts` | サーバー側の判定ロジック（チート防止・勝敗判定等） | 必要な場合のみ |
 
-#### `frontend/src/room.ts` で何を書くか
+#### 具体例: ○×ゲームを作る場合
 
-ファイル下部の「★ 以下を開発者がカスタマイズする」セクションの3つの関数を実装する:
+**`frontend/public/index.html`** — ゲーム画面のHTMLを追加:
+
+```html
+<div id="gameContainer">
+  <!-- 3x3 のマス目 -->
+  <div class="board">
+    <button class="cell" data-index="0"></button>
+    <button class="cell" data-index="1"></button>
+    <button class="cell" data-index="2"></button>
+    <!-- ... 9マス分 -->
+  </div>
+  <p id="turnInfo"></p>
+</div>
+```
+
+**`frontend/src/room.ts`** — 3つの関数を実装:
 
 ```typescript
-// ゲーム開始時に呼ばれる。ここでゲーム画面の初期化を行う。
 function onGameStart(players: string[]): void {
-  // 例: Canvasを生成してゲームループを開始する
+  // マス目にクリックイベントを設定
+  document.querySelectorAll(".cell").forEach((cell) => {
+    cell.addEventListener("click", (e) => {
+      const index = (e.target as HTMLElement).dataset.index;
+      // 自分がマスに置いたことを相手に送信
+      sendGameAction({ index: Number(index), mark: "O" });
+    });
+  });
 }
 
-// 相手のゲーム操作を受信した時に呼ばれる。ここで相手の状態を反映する。
 function onGameAction(from: string, data: Record<string, unknown>): void {
-  // 例: 相手のキャラ位置を更新する
+  // 相手がマスに置いた情報を受け取って画面に反映
+  const cell = document.querySelector(`[data-index="${data.index}"]`);
+  if (cell) cell.textContent = data.mark as string;
 }
 
-// プレイヤーが退出した時に呼ばれる。
 function onPlayerLeft(remainingPlayers: number): void {
-  // 例: 「相手が退出しました」と表示する
+  document.getElementById("turnInfo")!.textContent = "相手が退出しました";
 }
 ```
 
-相手にデータを送るには `sendGameAction()` を呼ぶ:
+**`backend/src/handlers/gameAction.ts`** — この例では編集不要。デフォルトの「相手にそのまま転送」で動く。
+
+#### 具体例: じゃんけんを作る場合
+
+**`frontend/src/room.ts`**:
 
 ```typescript
-// 自分の操作を相手に送信する
-sendGameAction({ x: 100, y: 200, type: "move" });
+function onGameStart(players: string[]): void {
+  // グー・チョキ・パーのボタンを表示
+  document.querySelectorAll(".hand-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const hand = (e.target as HTMLElement).dataset.hand;
+      sendGameAction({ hand });
+    });
+  });
+}
+
+function onGameAction(from: string, data: Record<string, unknown>): void {
+  // サーバーから判定結果を受け取って表示
+  const result = data.result as string; // "win" | "lose" | "draw"
+  document.getElementById("result")!.textContent = result;
+}
 ```
 
-#### `frontend/public/index.html` で何を書くか
+**`backend/src/handlers/gameAction.ts`** — じゃんけんはサーバーで判定が必要なので書き換える:
 
-`<div id="gameContainer">` の中にゲーム画面のHTMLを配置する。
-ルーム作成・参加画面（`<div id="lobby">`, `<div id="waiting">`）は共通で用意済み。見た目の変更は自由。
+```typescript
+// 両者の手を保存して、揃ったら判定して結果を返す
+const hands: Record<string, string> = {};
 
-#### `backend/src/handlers/gameAction.ts` で何を書くか（任意）
+// gameAction ハンドラー内で:
+hands[connectionId] = gameData.hand;
 
-デフォルトでは受け取ったデータをそのまま他プレイヤーに転送する。
-以下のような場合のみ書き換える:
+if (Object.keys(hands).length === 2) {
+  const result = judge(hands); // 勝敗判定
+  await broadcastToRoom(domainName, stage, room.players, {
+    type: "gameAction",
+    data: { result, hands },
+  });
+}
+```
 
-- じゃんけんのように**両者の入力が揃ってから判定**したい
-- クイズの早押しで**サーバーのタイムスタンプで順番を確定**したい
-- **不正なデータを弾く**バリデーションを入れたい
+> **ポイント**: フロントだけで完結するゲーム（○×ゲーム等）は `gameAction.ts` の編集不要。
+> サーバーで判定が必要なゲーム（じゃんけん等）は `gameAction.ts` も書き換える。
 
 ### 3. デプロイ
 
