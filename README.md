@@ -15,7 +15,6 @@ AWS API Gateway (WebSocket) + Lambda + DynamoDB + S3 + CloudFront
 - Node.js 20+
 - AWS CLI
 - AWS CDK（`npm install -g aws-cdk`）
-- CDK Bootstrap 済み（`cdk bootstrap aws://ACCOUNT_ID/ap-northeast-1 --profile sandbox`）
 
 > デプロイ先は **sandbox アカウント固定**です。
 > AWS CLI のプロファイル名を **`sandbox`** にしてください。
