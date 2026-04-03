@@ -53,87 +53,23 @@ export const gameConfig = {
 
 #### 具体例: ○×ゲームを作る場合
 
-**`frontend/public/index.html`** — ゲーム画面のHTMLを追加:
-
-```html
-<div id="gameContainer">
-  <!-- 3x3 のマス目 -->
-  <div class="board">
-    <button class="cell" data-index="0"></button>
-    <button class="cell" data-index="1"></button>
-    <button class="cell" data-index="2"></button>
-    <!-- ... 9マス分 -->
-  </div>
-  <p id="turnInfo"></p>
-</div>
-```
-
-**`frontend/src/room.ts`** — 3つの関数を実装:
-
-```typescript
-function onGameStart(players: string[]): void {
-  // マス目にクリックイベントを設定
-  document.querySelectorAll(".cell").forEach((cell) => {
-    cell.addEventListener("click", (e) => {
-      const index = (e.target as HTMLElement).dataset.index;
-      // 自分がマスに置いたことを相手に送信
-      sendGameAction({ index: Number(index), mark: "O" });
-    });
-  });
-}
-
-function onGameAction(from: string, data: Record<string, unknown>): void {
-  // 相手がマスに置いた情報を受け取って画面に反映
-  const cell = document.querySelector(`[data-index="${data.index}"]`);
-  if (cell) cell.textContent = data.mark as string;
-}
-
-function onPlayerLeft(remainingPlayers: number): void {
-  document.getElementById("turnInfo")!.textContent = "相手が退出しました";
-}
-```
-
-**`backend/src/handlers/gameAction.ts`** — この例では編集不要。デフォルトの「相手にそのまま転送」で動く。
+| ファイル | 書くこと |
+|---|---|
+| `frontend/public/index.html` | 3x3のマス目のHTMLを `<div id="gameContainer">` 内に配置する |
+| `frontend/public/style.css` | マス目の見た目を整える |
+| `frontend/src/room.ts` の `onGameStart` | マス目のクリックイベントを設定する。クリックしたら `sendGameAction()` でどのマスに置いたかを相手に送信する |
+| `frontend/src/room.ts` の `onGameAction` | 相手がどのマスに置いたかを受け取り、画面に反映する |
+| `frontend/src/room.ts` の `onPlayerLeft` | 「相手が退出しました」と表示する |
+| `backend/src/handlers/gameAction.ts` | **編集不要**。相手にそのまま転送するだけで動く |
 
 #### 具体例: じゃんけんを作る場合
 
-**`frontend/src/room.ts`**:
-
-```typescript
-function onGameStart(players: string[]): void {
-  // グー・チョキ・パーのボタンを表示
-  document.querySelectorAll(".hand-btn").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      const hand = (e.target as HTMLElement).dataset.hand;
-      sendGameAction({ hand });
-    });
-  });
-}
-
-function onGameAction(from: string, data: Record<string, unknown>): void {
-  // サーバーから判定結果を受け取って表示
-  const result = data.result as string; // "win" | "lose" | "draw"
-  document.getElementById("result")!.textContent = result;
-}
-```
-
-**`backend/src/handlers/gameAction.ts`** — じゃんけんはサーバーで判定が必要なので書き換える:
-
-```typescript
-// 両者の手を保存して、揃ったら判定して結果を返す
-const hands: Record<string, string> = {};
-
-// gameAction ハンドラー内で:
-hands[connectionId] = gameData.hand;
-
-if (Object.keys(hands).length === 2) {
-  const result = judge(hands); // 勝敗判定
-  await broadcastToRoom(domainName, stage, room.players, {
-    type: "gameAction",
-    data: { result, hands },
-  });
-}
-```
+| ファイル | 書くこと |
+|---|---|
+| `frontend/public/index.html` | グー・チョキ・パーのボタンを配置する |
+| `frontend/src/room.ts` の `onGameStart` | 各ボタンのクリックイベントを設定する。クリックしたら `sendGameAction()` で選んだ手を送信する |
+| `frontend/src/room.ts` の `onGameAction` | サーバーから判定結果（勝ち/負け/あいこ）を受け取り、画面に表示する |
+| `backend/src/handlers/gameAction.ts` | **編集が必要**。両者の手が揃うまで保持し、揃ったら勝敗を判定して結果を両者に送信する |
 
 > **ポイント**: フロントだけで完結するゲーム（○×ゲーム等）は `gameAction.ts` の編集不要。
 > サーバーで判定が必要なゲーム（じゃんけん等）は `gameAction.ts` も書き換える。
